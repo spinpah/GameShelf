@@ -1,150 +1,133 @@
-// pages/dashboard.js
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
+// scripts/seed.js
+const { PrismaClient } = require('@prisma/client');
 
-export default function Dashboard() {
-  const [user, setUser] = useState(null);
-  const [games, setGames] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const router = useRouter();
+const prisma = new PrismaClient();
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      router.push('/login');
-      return;
-    }
-
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      setUser(JSON.parse(userData));
-    }
-
-    fetchGames();
-  }, []);
-
-  const fetchGames = async () => {
-    try {
-      const response = await fetch('/api/games', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setGames(data.games);
-      }
-    } catch (error) {
-      console.error('Error fetching games:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    router.push('/login');
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-xl text-indigo-600">Loading GameShelf...</div>
-      </div>
-    );
+const sampleGames = [
+  {
+    name: "The Legend of Zelda: Breath of the Wild",
+    description: "An open-world action-adventure game that takes place at the end of the Zelda timeline. Link awakens from a 100-year slumber to defeat Calamity Ganon and save Hyrule.",
+    coverPhoto: "https://images.igdb.com/igdb/image/upload/t_cover_big/co1nqv.jpg",
+    averageRating: 4.8
+  },
+  {
+    name: "God of War (2018)",
+    description: "Kratos and his son Atreus embark on a journey through Norse mythology. A deeply personal story about a father and son relationship set in a beautiful, brutal world.",
+    coverPhoto: "https://images.igdb.com/igdb/image/upload/t_cover_big/co1tmu.jpg",
+    averageRating: 4.7
+  },
+  {
+    name: "Red Dead Redemption 2",
+    description: "An epic tale of life in America's unforgiving heartland. The game's vast and atmospheric world provides the foundation for a brand new online multiplayer experience.",
+    coverPhoto: "https://images.igdb.com/igdb/image/upload/t_cover_big/co1q1f.jpg",
+    averageRating: 4.6
+  },
+  {
+    name: "The Witcher 3: Wild Hunt",
+    description: "A story-driven open world RPG set in a dark fantasy universe. Play as Geralt of Rivia, a monster hunter tasked with finding a child of prophecy.",
+    coverPhoto: "https://images.igdb.com/igdb/image/upload/t_cover_big/co2wtq.jpg",
+    averageRating: 4.8
+  },
+  {
+    name: "Hades",
+    description: "A rogue-like dungeon crawler from the creators of Bastion and Transistor. Defy the god of death as you hack and slash out of the Underworld.",
+    coverPhoto: "https://images.igdb.com/igdb/image/upload/t_cover_big/co2i5d.jpg",
+    averageRating: 4.5
+  },
+  {
+    name: "Cyberpunk 2077",
+    description: "An open-world, action-adventure story set in Night City, a megalopolis obsessed with power, glamour and body modification.",
+    coverPhoto: "https://images.igdb.com/igdb/image/upload/t_cover_big/co2rwb.jpg",
+    averageRating: 3.8
+  },
+  {
+    name: "Minecraft",
+    description: "A sandbox video game where players can build constructions out of textured cubes in a 3D procedurally generated world.",
+    coverPhoto: "https://images.igdb.com/igdb/image/upload/t_cover_big/co49xz.jpg",
+    averageRating: 4.4
+  },
+  {
+    name: "Elden Ring",
+    description: "A fantasy action-RPG adventure set within a world full of mystery and peril. Journey through the Lands Between and become the Elden Lord.",
+    coverPhoto: "https://images.igdb.com/igdb/image/upload/t_cover_big/co4jni.jpg",
+    averageRating: 4.7
+  },
+  {
+    name: "Among Us",
+    description: "A multiplayer game of teamwork and betrayal. Crewmates work together to complete tasks while trying to identify the Impostors among them.",
+    coverPhoto: "https://images.igdb.com/igdb/image/upload/t_cover_big/co2etn.jpg",
+    averageRating: 4.1
+  },
+  {
+    name: "Grand Theft Auto V",
+    description: "An action-adventure game set in the fictional state of San Andreas. Switch between three unique protagonists and explore Los Santos.",
+    coverPhoto: "https://images.igdb.com/igdb/image/upload/t_cover_big/co2lbd.jpg",
+    averageRating: 4.5
+  },
+  {
+    name: "Animal Crossing: New Horizons",
+    description: "Create your own island paradise in this relaxing simulation game. Customize everything from your character to your home and the island itself.",
+    coverPhoto: "https://images.igdb.com/igdb/image/upload/t_cover_big/co1my5.jpg",
+    averageRating: 4.3
+  },
+  {
+    name: "Spider-Man: Miles Morales",
+    description: "Experience the rise of Miles Morales as he masters new powers to become his own Spider-Man in this standalone adventure.",
+    coverPhoto: "https://images.igdb.com/igdb/image/upload/t_cover_big/co2ict.jpg",
+    averageRating: 4.4
+  },
+  {
+    name: "Valorant",
+    description: "A free-to-play multiplayer tactical first-person shooter. Blend your style and experience on a global, competitive stage.",
+    coverPhoto: "https://images.igdb.com/igdb/image/upload/t_cover_big/co2mv0.jpg",
+    averageRating: 4.2
+  },
+  {
+    name: "Fortnite",
+    description: "A free-to-play battle royale game where 100 players fight to be the last one standing. Build, explore, and survive in this ever-changing world.",
+    coverPhoto: "https://images.igdb.com/igdb/image/upload/t_cover_big/co20g4.jpg",
+    averageRating: 4.0
+  },
+  {
+    name: "Fall Guys",
+    description: "A massively multiplayer party game with up to 60 players online in a free-for-all struggle through round after round of escalating chaos.",
+    coverPhoto: "https://images.igdb.com/igdb/image/upload/t_cover_big/co2eua.jpg",
+    averageRating: 3.9
   }
+];
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">🎮 GameShelf</h1>
-          <div className="flex items-center space-x-4">
-            <span className="text-gray-600">Welcome, {user?.username}!</span>
-            <button 
-              onClick={handleLogout}
-              className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
-            >
-              Logout
-            </button>
-          </div>
-        </div>
-      </header>
+async function seedGames() {
+  console.log('🌱 Starting to seed the database...');
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        {/* Popular Games Section */}
-        <section className="mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Popular Games</h2>
-          
-          {games.length === 0 ? (
-            <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-              <div className="text-6xl mb-4">🎮</div>
-              <p className="text-gray-600 mb-2">No games found in the database.</p>
-              <p className="text-sm text-gray-500">The database might need to be seeded with games.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {games.map((game) => (
-                <div key={game.id} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden">
-                  <div className="aspect-[3/4] bg-gray-200 overflow-hidden">
-                    {game.coverPhoto ? (
-                      <img 
-                        src={game.coverPhoto} 
-                        alt={game.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-6xl text-gray-400">
-                        🎮
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">{game.name}</h3>
-                    <p className="text-gray-600 text-sm mb-3 line-clamp-3">
-                      {game.description?.substring(0, 100)}...
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-1">
-                        <span className="text-yellow-500">⭐</span>
-                        <span className="text-sm font-medium text-gray-700">
-                          {game.averageRating?.toFixed(1) || 'No ratings'}
-                        </span>
-                      </div>
-                      <button className="text-indigo-600 hover:text-indigo-700 text-sm font-medium">
-                        Rate
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-
-        {/* Stats Section */}
-        <section>
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Your Stats</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white rounded-xl shadow-sm p-6 text-center">
-              <div className="text-3xl font-bold text-indigo-600 mb-2">0</div>
-              <div className="text-gray-600">Games Rated</div>
-            </div>
-            <div className="bg-white rounded-xl shadow-sm p-6 text-center">
-              <div className="text-3xl font-bold text-indigo-600 mb-2">0</div>
-              <div className="text-gray-600">Friends</div>
-            </div>
-            <div className="bg-white rounded-xl shadow-sm p-6 text-center">
-              <div className="text-3xl font-bold text-indigo-600 mb-2">{games.length}</div>
-              <div className="text-gray-600">Total Games</div>
-            </div>
-          </div>
-        </section>
-      </main>
-    </div>
-  );
+  try {
+    // Clear existing data (optional - be careful in production)
+    console.log('🗑️  Clearing existing ratings and games...');
+    await prisma.rating.deleteMany();
+    await prisma.game.deleteMany();
+    
+    console.log('🎮 Adding games to database...');
+    
+    // Add games one by one
+    for (const game of sampleGames) {
+      const createdGame = await prisma.game.create({
+        data: game
+      });
+      console.log(`✅ Added: ${createdGame.name}`);
+    }
+    
+    console.log(`\n🎉 Successfully seeded database with ${sampleGames.length} games!`);
+    console.log('🚀 Your GameShelf is ready to use!');
+    
+  } catch (error) {
+    console.error('❌ Error seeding database:', error);
+  } finally {
+    await prisma.$disconnect();
+  }
 }
+
+// Run the seed function
+if (require.main === module) {
+  seedGames();
+}
+
+module.exports = seedGames;
