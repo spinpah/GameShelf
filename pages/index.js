@@ -1,13 +1,11 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { useTheme } from '@/components/ThemeProvider';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 
 export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const { theme, toggleTheme } = useTheme();
   const router = useRouter();
 
   useEffect(() => {
@@ -27,34 +25,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
-      {/* Header */}
-      <header className="relative z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-3">
-              <div className="text-3xl">🎮</div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">GameShelf</h1>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <Button variant="ghost" onClick={toggleTheme} className="p-2">
-                {theme === 'light' ? '🌙' : '☀️'}
-              </Button>
-              
-              {isLoggedIn ? (
-                <Button onClick={() => router.push('/dashboard')}>
-                  Dashboard
-                </Button>
-              ) : (
-                <Button onClick={() => router.push('/login')}>
-                  Login
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
-
       {/* Hero Section */}
       <main className="relative">
         {/* Background decoration */}
