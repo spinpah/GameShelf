@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { Card } from './ui/Card';
 import { Badge } from './ui/Badge';
 import { Button } from './ui/Button';
@@ -9,24 +10,37 @@ export function GameCard({ game, onRate }) {
     return 'default';
   };
 
+  // Fallback image if no game image is provided
+  const getGameImage = (game) => {
+    if (game.background_image || game.coverPhoto) {
+      return game.background_image || game.coverPhoto;
+    }
+    
+    // Return a placeholder gaming image based on genre or default
+    const genre = game.genres?.[0]?.name?.toLowerCase() || 'default';
+    const placeholderImages = {
+      'action': 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&h=600&fit=crop&crop=center',
+      'rpg': 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400&h=600&fit=crop&crop=center',
+      'adventure': 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400&h=600&fit=crop&crop=center',
+      'strategy': 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=600&fit=crop&crop=center',
+      'sports': 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=600&fit=crop&crop=center',
+      'default': 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&h=600&fit=crop&crop=center'
+    };
+    
+    return placeholderImages[genre] || placeholderImages.default;
+  };
+
   return (
     <Card className="overflow-hidden group bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
       {/* Game Cover */}
       <div className="aspect-[3/4] overflow-hidden bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 relative">
-        {game.background_image || game.coverPhoto ? (
-          <img
-            src={game.background_image || game.coverPhoto}
-            alt={game.name}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-            onError={(e) => {
-              e.target.style.display = 'none';
-              e.target.nextSibling.style.display = 'flex';
-            }}
-          />
-        ) : null}
-        <div className="w-full h-full flex items-center justify-center text-6xl text-gray-400 dark:text-gray-500">
-          🎮
-        </div>
+        <Image
+          src={getGameImage(game)}
+          alt={game.name}
+          fill
+          className="object-cover group-hover:scale-110 transition-transform duration-500"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+        />
         
         {/* Overlay with rating */}
         <div className="absolute top-3 right-3">
@@ -44,6 +58,18 @@ export function GameCard({ game, onRate }) {
             </Badge>
           </div>
         )}
+
+        {/* Hover overlay */}
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onRate(game)}
+            className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 text-gray-900 hover:bg-white"
+          >
+            Rate Game
+          </Button>
+        </div>
       </div>
 
       {/* Game Info */}
@@ -72,15 +98,16 @@ export function GameCard({ game, onRate }) {
             )}
           </div>
 
-          {/* Rate Button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onRate(game)}
-            className="text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
-          >
-            Rate
-          </Button>
+          {/* Platform badges */}
+          {game.platforms && game.platforms.length > 0 && (
+            <div className="flex space-x-1">
+              {game.platforms.slice(0, 2).map((platform, index) => (
+                <Badge key={index} className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                  {platform.platform.name}
+                </Badge>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </Card>
