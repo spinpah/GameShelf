@@ -34,7 +34,7 @@ export default function Dashboard() {
 
     fetchPopularGames();
     fetchGenres();
-  }, []);
+  }, [router]);
 
   const fetchPopularGames = async (page = 1) => {
     try {
