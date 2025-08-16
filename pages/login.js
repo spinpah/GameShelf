@@ -1,6 +1,9 @@
-// pages/login.js
 import { useState } from 'react';
 import { useRouter } from 'next/router';
+import { useTheme } from '@/components/ThemeProvider';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Card } from '@/components/ui/Card';
 
 export default function Login() {
   const [isLogin, setIsLogin] = useState(true);
@@ -12,6 +15,7 @@ export default function Login() {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { theme, toggleTheme } = useTheme();
   const router = useRouter();
 
   const handleInputChange = (e) => {
@@ -67,135 +71,132 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-600 flex items-center justify-center px-4">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">🎮 GameShelf</h1>
-          <p className="text-gray-600">Track, rate, and share your gaming journey</p>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-purple-900 flex items-center justify-center px-4 transition-colors duration-300">
+      {/* Background decoration */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-32 w-80 h-80 rounded-full bg-gradient-to-r from-indigo-400/10 to-purple-600/10 blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-32 w-80 h-80 rounded-full bg-gradient-to-r from-blue-400/10 to-indigo-600/10 blur-3xl"></div>
+      </div>
+
+      <div className="relative w-full max-w-md">
+        {/* Theme Toggle */}
+        <div className="absolute -top-16 right-0">
+          <Button variant="ghost" onClick={toggleTheme} className="p-2">
+            {theme === 'light' ? '🌙' : '☀️'}
+          </Button>
         </div>
 
-        <div className="flex bg-gray-100 rounded-lg p-1 mb-8">
-          <button
-            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-              isLogin
-                ? 'bg-white text-indigo-600 shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-            onClick={() => setIsLogin(true)}
-          >
-            Login
-          </button>
-          <button
-            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-              !isLogin
-                ? 'bg-white text-indigo-600 shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-            onClick={() => setIsLogin(false)}
-          >
-            Sign Up
-          </button>
-        </div>
+        <Card className="p-8 backdrop-blur-sm bg-white/80 dark:bg-gray-800/80 border-0 shadow-2xl">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="flex items-center justify-center space-x-2 mb-4">
+              <div className="text-3xl">🎮</div>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">GameShelf</h1>
+            </div>
+            <p className="text-gray-600 dark:text-gray-300">
+              {isLogin ? 'Welcome back!' : 'Join the gaming community'}
+            </p>
+          </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-            <input
+          {/* Tab Switcher */}
+          <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1 mb-6">
+            <button
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
+                isLogin
+                  ? 'bg-white dark:bg-gray-600 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+              }`}
+              onClick={() => setIsLogin(true)}
+            >
+              Login
+            </button>
+            <button
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
+                !isLogin
+                  ? 'bg-white dark:bg-gray-600 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+              }`}
+              onClick={() => setIsLogin(false)}
+            >
+              Sign Up
+            </button>
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <Input
+              label="Email"
               type="email"
               name="email"
               value={formData.email}
               onChange={handleInputChange}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               placeholder="Enter your email"
+              required
             />
-          </div>
 
-          {!isLogin && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Username</label>
-              <input
+            {!isLogin && (
+              <Input
+                label="Username"
                 type="text"
                 name="username"
                 value={formData.username}
                 onChange={handleInputChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 placeholder="Choose a username"
+                required
               />
-            </div>
-          )}
+            )}
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
-            <input
+            <Input
+              label="Password"
               type="password"
               name="password"
               value={formData.password}
               onChange={handleInputChange}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               placeholder="Enter your password"
+              required
             />
-          </div>
 
-          {!isLogin && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
-              <input
+            {!isLogin && (
+              <Input
+                label="Confirm Password"
                 type="password"
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleInputChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 placeholder="Confirm your password"
+                required
               />
-            </div>
-          )}
+            )}
 
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
-              {error}
-            </div>
-          )}
+            {error && (
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className={`w-full py-2 px-4 rounded-lg font-medium transition-colors ${
-              loading
-                ? 'bg-gray-300 cursor-not-allowed'
-                : 'bg-indigo-600 hover:bg-indigo-700 text-white'
-            }`}
-          >
-            {loading ? 'Please wait...' : (isLogin ? 'Login' : 'Create Account')}
-          </button>
-        </form>
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full"
+              size="lg"
+            >
+              {loading ? 'Please wait...' : (isLogin ? 'Login' : 'Create Account')}
+            </Button>
+          </form>
 
-        <div className="mt-6 text-center">
-          {isLogin ? (
-            <p className="text-gray-600">
-              Don&apos;t have an account?{' '}
+          {/* Footer */}
+          <div className="mt-6 text-center">
+            <p className="text-gray-600 dark:text-gray-400">
+              {isLogin ? "Don't have an account? " : "Already have an account? "}
               <button
-                onClick={() => setIsLogin(false)}
-                className="text-indigo-600 hover:text-indigo-500 font-medium"
+                onClick={() => setIsLogin(!isLogin)}
+                className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 font-medium transition-colors"
               >
-                Sign up here
+                {isLogin ? 'Sign up here' : 'Login here'}
               </button>
             </p>
-          ) : (
-            <p className="text-gray-600">
-              Already have an account?{' '}
-              <button
-                onClick={() => setIsLogin(true)}
-                className="text-indigo-600 hover:text-indigo-500 font-medium"
-              >
-                Login here
-              </button>
-            </p>
-          )}
-        </div>
+          </div>
+        </Card>
       </div>
     </div>
   );

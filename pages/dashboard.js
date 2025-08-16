@@ -1,11 +1,23 @@
-// pages/dashboard.js
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
+import { Header } from '@/components/layout/Header';
+import { GameCard } from '@/components/GameCard';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Card } from '@/components/ui/Card';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
+import { Badge } from '@/components/ui/Badge';
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [games, setGames] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [activeTab, setActiveTab] = useState('popular');
+  const [genres, setGenres] = useState([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -20,12 +32,62 @@ export default function Dashboard() {
       setUser(JSON.parse(userData));
     }
 
-    fetchGames();
+    fetchPopularGames();
+    fetchGenres();
   }, []);
 
-  const fetchGames = async () => {
+  const fetchPopularGames = async (page = 1) => {
     try {
-      const response = await fetch('/api/games', {
+      setLoading(page === 1);
+      const response = await fetch(`/api/games/popular?page=${page}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (page === 1) {
+          setGames(data.games);
+        } else {
+          setGames(prev => [...prev, ...data.games]);
+        }
+        setHasNextPage(data.hasNext);
+        setCurrentPage(page);
+      }
+    } catch (error) {
+      console.error('Error fetching popular games:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchGenres = async () => {
+    try {
+      const response = await fetch('/api/games/genres', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setGenres(data.genres.slice(0, 10)); // Show top 10 genres
+      }
+    } catch (error) {
+      console.error('Error fetching genres:', error);
+    }
+  };
+
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+
+    setSearchLoading(true);
+    setActiveTab('search');
+    
+    try {
+      const response = await fetch(`/api/games/search?q=${encodeURIComponent(searchQuery)}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -34,12 +96,25 @@ export default function Dashboard() {
       if (response.ok) {
         const data = await response.json();
         setGames(data.games);
+        setHasNextPage(data.hasNext);
+        setCurrentPage(1);
       }
     } catch (error) {
-      console.error('Error fetching games:', error);
+      console.error('Error searching games:', error);
     } finally {
-      setLoading(false);
+      setSearchLoading(false);
     }
+  };
+
+  const handleLoadMore = () => {
+    if (activeTab === 'popular') {
+      fetchPopularGames(currentPage + 1);
+    }
+  };
+
+  const handleRateGame = (game) => {
+    // TODO: Implement rating functionality
+    console.log('Rate game:', game);
   };
 
   const handleLogout = () => {
@@ -48,102 +123,154 @@ export default function Dashboard() {
     router.push('/login');
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-xl text-indigo-600">Loading GameShelf...</div>
-      </div>
-    );
-  }
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    if (tab === 'popular') {
+      fetchPopularGames();
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">🎮 GameShelf</h1>
-          <div className="flex items-center space-x-4">
-            <span className="text-gray-600">Welcome, {user?.username}!</span>
-            <button 
-              onClick={handleLogout}
-              className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
-            >
-              Logout
-            </button>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+      <Header user={user} onLogout={handleLogout} />
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        {/* Popular Games Section */}
-        <section className="mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Popular Games</h2>
-          
-          {games.length === 0 ? (
-            <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-              <div className="text-6xl mb-4">🎮</div>
-              <p className="text-gray-600 mb-2">No games found in the database.</p>
-              <p className="text-sm text-gray-500">The database might need to be seeded with games.</p>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Welcome Section */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            Welcome back, {user?.username}! 🎮
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            Discover your next favorite game from thousands of options
+          </p>
+        </div>
+
+        {/* Search Bar */}
+        <Card className="p-6 mb-8">
+          <form onSubmit={handleSearch} className="flex gap-4">
+            <div className="flex-1">
+              <Input
+                placeholder="Search for games..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="text-lg"
+              />
             </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <Button 
+              type="submit" 
+              disabled={searchLoading || !searchQuery.trim()}
+              size="lg"
+            >
+              {searchLoading ? <LoadingSpinner size="sm" /> : 'Search'}
+            </Button>
+          </form>
+        </Card>
+
+        {/* Quick Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          {[
+            { label: 'Games Rated', value: '0', color: 'text-blue-600 dark:text-blue-400' },
+            { label: 'Friends', value: '0', color: 'text-green-600 dark:text-green-400' },
+            { label: 'Reviews Written', value: '0', color: 'text-purple-600 dark:text-purple-400' },
+            { label: 'Games Discovered', value: games.length, color: 'text-indigo-600 dark:text-indigo-400' }
+          ].map((stat, index) => (
+            <Card key={index} className="p-6 text-center">
+              <div className={`text-3xl font-bold ${stat.color} mb-2`}>
+                {stat.value}
+              </div>
+              <div className="text-gray-600 dark:text-gray-400 text-sm">
+                {stat.label}
+              </div>
+            </Card>
+          ))}
+        </div>
+
+        {/* Tabs */}
+        <div className="flex space-x-1 mb-8 bg-gray-200 dark:bg-gray-700 rounded-lg p-1">
+          {[
+            { id: 'popular', label: 'Popular Games' },
+            { id: 'search', label: 'Search Results' }
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => handleTabChange(tab.id)}
+              className={`flex-1 py-3 px-4 rounded-md font-medium transition-all duration-200 ${
+                activeTab === tab.id
+                  ? 'bg-white dark:bg-gray-600 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Games Grid */}
+        {loading ? (
+          <div className="flex justify-center items-center py-20">
+            <div className="text-center">
+              <LoadingSpinner size="lg" className="mb-4" />
+              <p className="text-gray-600 dark:text-gray-400">Loading amazing games...</p>
+            </div>
+          </div>
+        ) : games.length === 0 ? (
+          <Card className="p-12 text-center">
+            <div className="text-6xl mb-4">🎮</div>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+              No games found
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400">
+              {activeTab === 'search' 
+                ? 'Try searching for something else' 
+                : 'Unable to load games at the moment'}
+            </p>
+          </Card>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
               {games.map((game) => (
-                <div key={game.id} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden">
-                  <div className="aspect-[3/4] bg-gray-200 overflow-hidden">
-                    {game.coverPhoto ? (
-                      <img 
-                        src={game.coverPhoto} 
-                        alt={game.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-6xl text-gray-400">
-                        🎮
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">{game.name}</h3>
-                    <p className="text-gray-600 text-sm mb-3 line-clamp-3">
-                      {game.description?.substring(0, 100)}...
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-1">
-                        <span className="text-yellow-500">⭐</span>
-                        <span className="text-sm font-medium text-gray-700">
-                          {game.averageRating?.toFixed(1) || 'No ratings'}
-                        </span>
-                      </div>
-                      <button className="text-indigo-600 hover:text-indigo-700 text-sm font-medium">
-                        Rate
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                <GameCard
+                  key={game.id}
+                  game={game}
+                  onRate={handleRateGame}
+                />
               ))}
             </div>
-          )}
-        </section>
 
-        {/* Stats Section */}
-        <section>
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Your Stats</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white rounded-xl shadow-sm p-6 text-center">
-              <div className="text-3xl font-bold text-indigo-600 mb-2">0</div>
-              <div className="text-gray-600">Games Rated</div>
+            {/* Load More Button */}
+            {hasNextPage && activeTab === 'popular' && (
+              <div className="text-center">
+                <Button
+                  onClick={handleLoadMore}
+                  variant="outline"
+                  size="lg"
+                  disabled={loading}
+                >
+                  {loading ? <LoadingSpinner size="sm" /> : 'Load More Games'}
+                </Button>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Popular Genres */}
+        {genres.length > 0 && (
+          <Card className="p-6 mt-8">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Popular Genres
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {genres.map((genre) => (
+                <Badge
+                  key={genre.id}
+                  className="cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900 transition-colors"
+                >
+                  {genre.name}
+                </Badge>
+              ))}
             </div>
-            <div className="bg-white rounded-xl shadow-sm p-6 text-center">
-              <div className="text-3xl font-bold text-indigo-600 mb-2">0</div>
-              <div className="text-gray-600">Friends</div>
-            </div>
-            <div className="bg-white rounded-xl shadow-sm p-6 text-center">
-              <div className="text-3xl font-bold text-indigo-600 mb-2">{games.length}</div>
-              <div className="text-gray-600">Total Games</div>
-            </div>
-          </div>
-        </section>
+          </Card>
+        )}
       </main>
     </div>
   );
