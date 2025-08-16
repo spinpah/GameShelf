@@ -192,3 +192,10 @@ export default function Login() {
     </div>
   );
 }
+
+// Add getServerSideProps to prevent static generation issues
+export async function getServerSideProps(context) {
+  return {
+    props: {}, // Will be passed to the page component as props
+  }
+}
