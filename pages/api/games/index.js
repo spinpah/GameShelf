@@ -2,6 +2,8 @@
 // pages/api/games/index.js
 import { PrismaClient } from '@prisma/client';
 import { verifyToken } from '../../../lib/auth';
+import './globals.css';
+
 
 const prisma = new PrismaClient();
 
