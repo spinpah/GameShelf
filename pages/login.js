@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
+import { useTheme } from '@/components/ThemeProvider';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
@@ -14,6 +15,7 @@ export default function Login() {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { theme, toggleTheme } = useTheme();
   const router = useRouter();
 
   const handleInputChange = (e) => {
@@ -77,12 +79,19 @@ export default function Login() {
       </div>
 
       <div className="relative w-full max-w-md">
+        {/* Theme Toggle */}
+        <div className="absolute -top-16 right-0">
+          <Button variant="ghost" onClick={toggleTheme} className="p-2">
+            {theme === 'light' ? '🌙' : '☀️'}
+          </Button>
+        </div>
+
         <Card className="p-8 backdrop-blur-sm bg-white/80 dark:bg-gray-800/80 border-0 shadow-2xl">
           {/* Header */}
           <div className="text-center mb-8">
             <div className="flex items-center justify-center space-x-2 mb-4">
               <div className="text-3xl">🎮</div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">GameShelf</h1>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">GameShelf</h1>
             </div>
             <p className="text-gray-600 dark:text-gray-300">
               {isLogin ? 'Welcome back!' : 'Join the gaming community'}
@@ -191,11 +200,4 @@ export default function Login() {
       </div>
     </div>
   );
-}
-
-// Add getServerSideProps to prevent static generation issues
-export async function getServerSideProps(context) {
-  return {
-    props: {}, // Will be passed to the page component as props
-  }
 }
