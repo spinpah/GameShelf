@@ -1,16 +1,17 @@
 import { GamesAPI } from '../../../lib/gamesApi';
-import { verifyToken } from '../../../lib/auth';
+
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ message: 'Method not allowed' });
   }
 
-  // Verify authentication
-  verifyToken(req, res, async () => {
+  
     try {
       const { q: query, page = 1, page_size = 20 } = req.query;
       
+
+
       if (!query) {
         return res.status(400).json({ message: 'Search query is required' });
       }
@@ -22,5 +23,5 @@ export default async function handler(req, res) {
       console.error('Error in search games API:', error);
       res.status(500).json({ message: 'Internal server error' });
     }
-  });
+  ;
 }

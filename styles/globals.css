@@ -10,6 +10,9 @@
   
   body {
     @apply transition-colors duration-300;
+    background: url('/noise.svg');
+    background-repeat: repeat; /* since it’s noise, tiling looks good */
+    background-size: auto;   
   }
   
   /* Custom scrollbar */
@@ -29,6 +32,30 @@
     @apply bg-gray-500 dark:bg-gray-500;
   }
 }
+
+@font-face {
+  font-family: 'MonumentGrotesk';
+  src: url('/font/ABCMonumentGrotesk-Regular-Trial.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'MonumentGrotesk';
+  src: url('/font/ABCMonumentGrotesk-Medium-Trial.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@layer base {
+  body {
+    font-family: 'MonumentGrotesk', sans-serif;
+  }
+}
+
+
 
 /* Custom utilities */
 @layer utilities {

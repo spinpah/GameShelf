@@ -1,7 +1,7 @@
 
 // pages/api/games/index.js
 import { PrismaClient } from '@prisma/client';
-import { verifyToken } from '../../../lib/auth';
+
 import './globals.css';
 
 
@@ -13,7 +13,7 @@ export default async function handler(req, res) {
   }
 
   // Verify authentication
-  verifyToken(req, res, async () => {
+ 
     try {
       const games = await prisma.game.findMany({
         orderBy: {
@@ -32,5 +32,5 @@ export default async function handler(req, res) {
     } finally {
       await prisma.$disconnect();
     }
-  });
+  ;
 }

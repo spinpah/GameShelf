@@ -7,7 +7,7 @@ export default async function handler(req, res) {
   }
 
   // Verify authentication
-  verifyToken(req, res, async () => {
+  
     try {
       const genres = await GamesAPI.getGenres();
       res.status(200).json({ genres });
@@ -15,5 +15,5 @@ export default async function handler(req, res) {
       console.error('Error in genres API:', error);
       res.status(500).json({ message: 'Internal server error' });
     }
-  });
+  ;
 }

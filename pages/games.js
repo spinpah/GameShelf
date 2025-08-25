@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { Header } from '@/components/layout/Header';
@@ -7,9 +8,13 @@ import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { Badge } from '@/components/ui/Badge';
+import { useTheme } from '@/components/ThemeProvider';
+
+
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [games, setGames] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
@@ -19,17 +24,14 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('popular');
   const [genres, setGenres] = useState([]);
   const router = useRouter();
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      router.push('/login');
-      return;
-    }
 
     const userData = localStorage.getItem('user');
     if (userData) {
       setUser(JSON.parse(userData));
+      setIsLoggedIn(true);
     }
 
     fetchPopularGames();
@@ -39,16 +41,15 @@ export default function Dashboard() {
   const fetchPopularGames = async (page = 1) => {
     try {
       setLoading(page === 1);
-      const response = await fetch(`/api/games/popular?page=${page}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      const response = await fetch(`/api/games/popular?page=${page}`, {});
+      
       
       if (response.ok) {
         const data = await response.json();
+        
         if (page === 1) {
           setGames(data.games);
+
         } else {
           setGames(prev => [...prev, ...data.games]);
         }
@@ -65,9 +66,7 @@ export default function Dashboard() {
   const fetchGenres = async () => {
     try {
       const response = await fetch('/api/games/genres', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+        
       });
       
       if (response.ok) {
@@ -87,12 +86,12 @@ export default function Dashboard() {
     setActiveTab('search');
     
     try {
-      const response = await fetch(`/api/games/search?q=${encodeURIComponent(searchQuery)}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
       
+      const response = await fetch(`/api/games/search?q=${encodeURIComponent(searchQuery)}`, {
+        
+      });
+      console.log(`/api/games/search?q=${encodeURIComponent(searchQuery)}`)
+      console.log(response);
       if (response.ok) {
         const data = await response.json();
         setGames(data.games);
@@ -131,14 +130,14 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 pt-24">
       <Header user={user} onLogout={handleLogout} />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Welcome back, {user?.username}! 🎮
+            Welcome back  {user?.username} 
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
             Discover your next favorite game from thousands of options
@@ -165,26 +164,7 @@ export default function Dashboard() {
             </Button>
           </form>
         </Card>
-
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          {[
-            { label: 'Games Rated', value: '0', color: 'text-blue-600 dark:text-blue-400' },
-            { label: 'Friends', value: '0', color: 'text-green-600 dark:text-green-400' },
-            { label: 'Reviews Written', value: '0', color: 'text-purple-600 dark:text-purple-400' },
-            { label: 'Games Discovered', value: games.length, color: 'text-indigo-600 dark:text-indigo-400' }
-          ].map((stat, index) => (
-            <Card key={index} className="p-6 text-center">
-              <div className={`text-3xl font-bold ${stat.color} mb-2`}>
-                {stat.value}
-              </div>
-              <div className="text-gray-600 dark:text-gray-400 text-sm">
-                {stat.label}
-              </div>
-            </Card>
-          ))}
-        </div>
-
+        
         {/* Tabs */}
         <div className="flex space-x-1 mb-8 bg-gray-200 dark:bg-gray-700 rounded-lg p-1">
           {[
@@ -205,6 +185,25 @@ export default function Dashboard() {
           ))}
         </div>
 
+        {genres.length > 0 && (
+          <Card className="p-6 mt-8">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Popular Genres
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {genres.map((genre) => (
+                <Badge
+                  key={genre.id}
+                  className="cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900 transition-colors"
+                >
+                  {genre.name}
+                </Badge>
+              ))}
+            </div>
+          </Card>
+        )}
+
+
         {/* Games Grid */}
         {loading ? (
           <div className="flex justify-center items-center py-20">
@@ -213,7 +212,7 @@ export default function Dashboard() {
               <p className="text-gray-600 dark:text-gray-400">Loading amazing games...</p>
             </div>
           </div>
-        ) : games.length === 0 ? (
+        ) : !games  ? (
           <Card className="p-12 text-center">
             <div className="text-6xl mb-4">🎮</div>
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
@@ -233,6 +232,7 @@ export default function Dashboard() {
                   key={game.id}
                   game={game}
                   onRate={handleRateGame}
+                  loggedin={isLoggedIn}
                 />
               ))}
             </div>
@@ -254,23 +254,7 @@ export default function Dashboard() {
         )}
 
         {/* Popular Genres */}
-        {genres.length > 0 && (
-          <Card className="p-6 mt-8">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              Popular Genres
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {genres.map((genre) => (
-                <Badge
-                  key={genre.id}
-                  className="cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900 transition-colors"
-                >
-                  {genre.name}
-                </Badge>
-              ))}
-            </div>
-          </Card>
-        )}
+        
       </main>
     </div>
   );

@@ -1,8 +1,9 @@
+/* eslint-disable @next/next/no-img-element */
 import { Card } from './ui/Card';
 import { Badge } from './ui/Badge';
 import { Button } from './ui/Button';
 
-export function GameCard({ game, onRate }) {
+export function GameCard({ game, onRate , loggedin = false }) {
   const getRatingColor = (rating) => {
     if (rating >= 4.5) return 'success';
     if (rating >= 3.5) return 'warning';
@@ -57,6 +58,7 @@ export function GameCard({ game, onRate }) {
           </div>
 
           {/* Rate Button */}
+          {loggedin &&
           <Button
             variant="ghost"
             size="sm"
@@ -64,7 +66,7 @@ export function GameCard({ game, onRate }) {
             className="text-indigo-600 dark:text-indigo-400"
           >
             Rate
-          </Button>
+          </Button>} 
         </div>
       </div>
     </Card>

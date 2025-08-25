@@ -59,7 +59,7 @@ export default function Login() {
       if (response.ok) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        router.push('/dashboard');
+        router.push('/');
       } else {
         setError(data.message || 'Something went wrong');
       }
@@ -71,7 +71,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-purple-900 flex items-center justify-center px-4 transition-colors duration-300">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-200 via-white-200 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-purple-900 flex items-center justify-center px-4 transition-colors duration-300">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-32 w-80 h-80 rounded-full bg-gradient-to-r from-indigo-400/10 to-purple-600/10 blur-3xl"></div>
@@ -80,16 +80,12 @@ export default function Login() {
 
       <div className="relative w-full max-w-md">
         {/* Theme Toggle */}
-        <div className="absolute -top-16 right-0">
-          <Button variant="ghost" onClick={toggleTheme} className="p-2">
-            {theme === 'light' ? '🌙' : '☀️'}
-          </Button>
-        </div>
+        
 
         <Card className="p-8 backdrop-blur-sm bg-white/80 dark:bg-gray-800/80 border-0 shadow-2xl">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="flex items-center justify-center space-x-2 mb-4">
+            <div className="flex items-center justify-center space-x-2 mb-4 cursor-pointer" onClick={() => router.push('/')}>
               <div className="text-3xl">🎮</div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">GameShelf</h1>
             </div>
