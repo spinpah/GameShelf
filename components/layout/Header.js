@@ -27,9 +27,19 @@ export function Header({ user, onLogout }) {
               className="w-full max-w-[300px] h-auto"
             />
           </div>
-
+          
           {/* Desktop Navigation */}
           <div className="flex justify-between space-x-6 items-center">
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleTheme}
+              className="p-2"
+            >
+              {theme === 'light' ? '🌙' : '☀️'}
+            </Button>
+
             <p
               className="text-lg font-regular text-gray-900 cursor-pointer dark:text-white"
               onClick={() => router.push('/games')}
