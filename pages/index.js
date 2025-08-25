@@ -94,7 +94,7 @@ export default function Home() {
                   <div className="px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-4 gap-4 animate-tilt">
                       {[
-                          { emoji: 'lol', title: 'League of legends', rating: '4.8', genre: 'Moba' },
+                          { emoji: 'LoL', title: 'League of legends', rating: '4.8', genre: 'Moba' },
                           { emoji: 'gtav', title: 'Grand Theft Auto V', rating: '4.5', genre: 'Open World' },
                           { emoji: 'valorant', title: 'Valorant', rating: '4.9', genre: 'FPS' },
                           { emoji: 'cs2', title: 'Counter Strike 2', rating: '4.3', genre: 'FPS' },
