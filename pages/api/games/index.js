@@ -2,7 +2,6 @@
 // pages/api/games/index.js
 import { PrismaClient } from '@prisma/client';
 
-import './globals.css';
 
 
 const prisma = new PrismaClient();
