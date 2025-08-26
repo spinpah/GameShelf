@@ -27,6 +27,29 @@ function GameGrid({ games, onRate, loggedin = false }) {
   );
 }
 
+// Filter Dropdown Component
+function FilterDropdown({ label, value, onChange, options, placeholder }) {
+  return (
+    <div className="relative">
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        {label}
+      </label>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm text-gray-900 dark:text-white"
+      >
+        <option value="">{placeholder}</option>
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -38,8 +61,49 @@ export default function Dashboard() {
   const [hasNextPage, setHasNextPage] = useState(false);
   const [activeTab, setActiveTab] = useState('popular');
   const [genres, setGenres] = useState([]);
+  
+  // Filter states
+  const [filters, setFilters] = useState({
+    year: '',
+    rating: '',
+    platform: ''
+  });
+  
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
+
+  // Filter options
+  const yearOptions = [
+    { value: '2020s', label: '2020s' },
+    { value: '2010s', label: '2010s' },
+    { value: '2000s', label: '2000s' },
+    { value: '1990s', label: '1990s' },
+    { value: '1980s', label: '1980s' },
+    { value: '1970s', label: '1970s' }
+  ];
+
+  const ratingOptions = [
+    { value: '5', label: '5 Stars' },
+    { value: '4.5', label: '4.5+ Stars' },
+    { value: '4', label: '4+ Stars' },
+    { value: '3.5', label: '3.5+ Stars' },
+    { value: '3', label: '3+ Stars' },
+    { value: '2.5', label: '2.5+ Stars' },
+    { value: '2', label: '2+ Stars' },
+    { value: '1.5', label: '1.5+ Stars' },
+    { value: '1', label: '1+ Stars' },
+    { value: '0.5', label: '0.5+ Stars' }
+  ];
+
+  const platformOptions = [
+    { value: 'pc', label: 'PC' },
+    { value: 'playstation', label: 'PlayStation' },
+    { value: 'xbox', label: 'Xbox' },
+    { value: 'nintendo', label: 'Nintendo' },
+    { value: 'mobile', label: 'Mobile' },
+    { value: 'steam', label: 'Steam' },
+    { value: 'epic', label: 'Epic Games' }
+  ];
 
   useEffect(() => {
     const userData = localStorage.getItem('user');
@@ -149,46 +213,129 @@ export default function Dashboard() {
       });
   };
 
+  // Handle filter changes
+  const handleFilterChange = (filterType, value) => {
+    setFilters(prev => ({
+      ...prev,
+      [filterType]: value
+    }));
+    
+    // TODO: Implement filter logic here
+    console.log(`Filter changed - ${filterType}: ${value}`, filters);
+    // You can add your filter API call logic here
+  };
+
+  // Clear all filters
+  const clearFilters = () => {
+    setFilters({
+      year: '',
+      rating: '',
+      platform: ''
+    });
+    
+    // TODO: Reset to default view (popular games)
+    setActiveTab('popular');
+    fetchPopularGames();
+  };
+
+  // Check if any filters are active
+  const hasActiveFilters = Object.values(filters).some(filter => filter !== '');
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 pt-24">
       <Header user={user} onLogout={handleLogout} />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Welcome Section */}
+        {/* Browse By Section */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Welcome back {user?.username} 
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Discover your next favorite game from thousands of options
-          </p>
-        </div>
-
-        {/* Search Bar */}
-        <Card className="p-6 mb-8">
-          <form onSubmit={handleSearch} className="flex gap-4">
-            <div className="flex-1">
-              <Input
-                placeholder="Search for games..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="text-lg"
-              />
+          <div className="flex flex-col lg:flex-row lg:items-end gap-3">
+            {/* Browse By Title */}
+            <div className="lg:w-1/4">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white ">
+                BROWSE BY
+              </h2>
             </div>
-            <Button 
-              type="submit" 
-              disabled={searchLoading || !searchQuery.trim()}
-              size="lg"
-            >
-              {searchLoading ? <LoadingSpinner size="sm" /> : 'Search'}
-            </Button>
-          </form>
-        </Card>
+
+            {/* Filter Dropdowns */}
+            <div className="lg:flex-1">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 ">
+                <FilterDropdown
+                  
+                  value={filters.year}
+                  onChange={(value) => handleFilterChange('year', value)}
+                  options={yearOptions}
+                  placeholder="Select decade"
+                />
+                
+                <FilterDropdown
+                  
+                  value={filters.rating}
+                  onChange={(value) => handleFilterChange('rating', value)}
+                  options={ratingOptions}
+                  placeholder="Minimum rating"
+                />
+                
+                <FilterDropdown
+                 
+                  value={filters.platform}
+                  onChange={(value) => handleFilterChange('platform', value)}
+                  options={platformOptions}
+                  placeholder="Select platform"
+                />
+              </div>
+
+              
+            </div>
+
+            {/* Search Bar */}
+            <div className="lg:w-1/3 ">
+              <form onSubmit={handleSearch} className="flex gap-2">
+                <div className="flex-1">
+                  <Input
+                    placeholder="Search for games..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="text-sm"
+                  />
+                </div>
+                <Button 
+                  type="submit" 
+                  disabled={searchLoading || !searchQuery.trim()}
+                  size="md"
+                >
+                  {searchLoading ? <LoadingSpinner size="sm" /> : 'Search'}
+                </Button>
+              </form>
+            </div>
+          </div>
+        </div>
         
+              {/* Popular Genres */}
+        {genres.length > 0 && (
+          <div className='mb-8'>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Popular Genres
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {genres.map((genre) => (
+                <Badge
+                  key={genre.id}
+                  className="cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900 hover:scale-105 transition-all duration-200"
+                  onClick={() => handleGenreClick(genre.name)}
+                >
+                  {genre.name}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
+
+
+
         {/* Tabs */}
-        <div className="flex space-x-1 mb-8 bg-gray-200 dark:bg-gray-700 rounded-lg p-1">
+        <div className="flex space-x-1 mb-8 bg-gray-200 dark:bg-gray-700 rounded-lg">
           {[
-            { id: 'popular', label: 'Popular Games' },
+            { id: 'popular', label: 'All Games' },
             { id: 'search', label: 'Search Results' }
           ].map((tab) => (
             <button
@@ -205,25 +352,44 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Popular Genres */}
-        {genres.length > 0 && (
-          <Card className="p-6 mb-8">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              Popular Genres
-            </h3>
+        
+        {/* Active Filters Display */}
+        {hasActiveFilters && (
+          <div className="mb-6">
+            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Active Filters:
+            </h4>
             <div className="flex flex-wrap gap-2">
-              {genres.map((genre) => (
-                <Badge
-                  key={genre.id}
-                  className="cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900 hover:scale-105 transition-all duration-200"
-                  onClick={() => handleGenreClick(genre.name)}
-                >
-                  {genre.name}
+              {filters.year && (
+                <Badge variant="secondary" className="bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">
+                  Year: {filters.year}
                 </Badge>
-              ))}
+              )}
+              {filters.rating && (
+                <Badge variant="secondary" className="bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">
+                  Rating: {filters.rating}+ Stars
+                </Badge>
+              )}
+              {filters.platform && (
+                <Badge variant="secondary" className="bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">
+                  Platform: {platformOptions.find(p => p.value === filters.platform)?.label}
+                </Badge>
+              )}
+
+              <div className="flex justify-end">
+                  <Button
+                    onClick={clearFilters}
+                    variant="secondary"
+                    size="sm"
+                    className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                  >
+                    Clear Filters
+                  </Button>
+                </div>
             </div>
-          </Card>
+          </div>
         )}
+        
 
         {/* Loading State */}
         {loading ? (
