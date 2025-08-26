@@ -20,7 +20,7 @@ export function Header({ user, onLogout }) {
             onClick={() => router.push('/')}
           >
             <Image
-              src="/images/logo-vertical-dark.png"
+              src={theme === 'light' ? "/images/logo-vertical.png" : "/images/logo-vertical-dark.png"}
               alt="Logo"
               width={250}
               height={250}

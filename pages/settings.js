@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import { Header } from '@/components/layout/Header';
 
 
+
 export default function Dashboard() {
   const [user, setUser] = useState(null);
   const router = useRouter();
@@ -26,7 +27,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 pt-24">
       <Header user={user} onLogout={handleLogout} />
-
+        
     </div>
   );
 }

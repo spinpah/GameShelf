@@ -184,7 +184,7 @@ export default function Home() {
             <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-8 text-center max-w-lg mx-4  relative">
               
                 <Image 
-                    src="/images/logo-vertical-dark.png" 
+                    src={theme === 'light' ? "/images/logo-vertical.png" : "/images/logo-vertical-dark.png"}
                     alt="Logo" 
                     width={150}  
                     height={150} 
@@ -213,7 +213,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="flex items-center justify-center space-x-2 mb-4">
             <Image 
-            src="/images/logo-vertical-dark.png" 
+            src={theme === 'light' ? "/images/logo-vertical.png" : "/images/logo-vertical-dark.png"} 
             alt="Logo" 
             width={250} 
             height={250} 

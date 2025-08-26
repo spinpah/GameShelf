@@ -9,8 +9,23 @@ import { Card } from '@/components/ui/Card';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { Badge } from '@/components/ui/Badge';
 import { useTheme } from '@/components/ThemeProvider';
+import { searchGames } from './api/games/Search'; 
 
-
+// Simple GameGrid Component
+function GameGrid({ games, onRate, loggedin = false }) {
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 mb-8">
+      {games.map((game, index) => (
+        <GameCard
+          key={game.id || index}
+          game={game}
+          onRate={onRate}
+          loggedin={loggedin}
+        />
+      ))}
+    </div>
+  );
+}
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -27,7 +42,6 @@ export default function Dashboard() {
   const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
-
     const userData = localStorage.getItem('user');
     if (userData) {
       setUser(JSON.parse(userData));
@@ -43,13 +57,11 @@ export default function Dashboard() {
       setLoading(page === 1);
       const response = await fetch(`/api/games/popular?page=${page}`, {});
       
-      
       if (response.ok) {
         const data = await response.json();
         
         if (page === 1) {
           setGames(data.games);
-
         } else {
           setGames(prev => [...prev, ...data.games]);
         }
@@ -65,13 +77,11 @@ export default function Dashboard() {
 
   const fetchGenres = async () => {
     try {
-      const response = await fetch('/api/games/genres', {
-        
-      });
+      const response = await fetch('/api/games/genres', {});
       
       if (response.ok) {
         const data = await response.json();
-        setGenres(data.genres.slice(0, 15)); // Show top 10 genres
+        setGenres(data.genres.slice(0, 15)); // Show top 15 genres
       }
     } catch (error) {
       console.error('Error fetching genres:', error);
@@ -86,20 +96,11 @@ export default function Dashboard() {
     setActiveTab('search');
     
     try {
-      
-      const response = await fetch(`/api/games/search?q=${encodeURIComponent(searchQuery)}`, {
-        
-      });
-      console.log(`/api/games/search?q=${encodeURIComponent(searchQuery)}`)
-      console.log(response);
-      if (response.ok) {
-        const data = await response.json();
-        setGames(data.games);
-        setHasNextPage(data.hasNext);
-        setCurrentPage(1);
-      }
+      const searchResults = await searchGames(searchQuery.trim());
+      setGames(searchResults);
     } catch (error) {
       console.error('Error searching games:', error);
+      setGames([]); // Set empty array on error
     } finally {
       setSearchLoading(false);
     }
@@ -129,6 +130,25 @@ export default function Dashboard() {
     }
   };
 
+  const handleGenreClick = (genreName) => {
+    setSearchQuery(genreName);
+    // Automatically search for the genre
+    setActiveTab('search');
+    setSearchLoading(true);
+    
+    searchGames(genreName)
+      .then(results => {
+        setGames(results);
+      })
+      .catch(error => {
+        console.error('Error searching by genre:', error);
+        setGames([]);
+      })
+      .finally(() => {
+        setSearchLoading(false);
+      });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 pt-24">
       <Header user={user} onLogout={handleLogout} />
@@ -137,7 +157,7 @@ export default function Dashboard() {
         {/* Welcome Section */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Welcome back  {user?.username} 
+            Welcome back {user?.username} 
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
             Discover your next favorite game from thousands of options
@@ -185,8 +205,9 @@ export default function Dashboard() {
           ))}
         </div>
 
+        {/* Popular Genres */}
         {genres.length > 0 && (
-          <Card className="p-6 mt-8">
+          <Card className="p-6 mb-8">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               Popular Genres
             </h3>
@@ -194,7 +215,8 @@ export default function Dashboard() {
               {genres.map((genre) => (
                 <Badge
                   key={genre.id}
-                  className="cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900 transition-colors"
+                  className="cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900 hover:scale-105 transition-all duration-200"
+                  onClick={() => handleGenreClick(genre.name)}
                 >
                   {genre.name}
                 </Badge>
@@ -203,8 +225,7 @@ export default function Dashboard() {
           </Card>
         )}
 
-
-        {/* Games Grid */}
+        {/* Loading State */}
         {loading ? (
           <div className="flex justify-center items-center py-20">
             <div className="text-center">
@@ -212,7 +233,8 @@ export default function Dashboard() {
               <p className="text-gray-600 dark:text-gray-400">Loading amazing games...</p>
             </div>
           </div>
-        ) : !games  ? (
+        ) : !games || games.length === 0 ? (
+          /* No Games Found */
           <Card className="p-12 text-center">
             <div className="text-6xl mb-4">🎮</div>
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
@@ -223,19 +245,24 @@ export default function Dashboard() {
                 ? 'Try searching for something else' 
                 : 'Unable to load games at the moment'}
             </p>
+            {activeTab === 'search' && (
+              <Button 
+                onClick={() => handleTabChange('popular')}
+                variant="outline"
+                className="mt-4"
+              >
+                View Popular Games
+              </Button>
+            )}
           </Card>
         ) : (
+          /* Games Grid */
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-              {games.map((game) => (
-                <GameCard
-                  key={game.id}
-                  game={game}
-                  onRate={handleRateGame}
-                  loggedin={isLoggedIn}
-                />
-              ))}
-            </div>
+            <GameGrid
+              games={games}
+              onRate={handleRateGame}
+              loggedin={isLoggedIn}
+            />
 
             {/* Load More Button */}
             {hasNextPage && activeTab === 'popular' && (
@@ -245,6 +272,7 @@ export default function Dashboard() {
                   variant="outline"
                   size="lg"
                   disabled={loading}
+                  className="hover:scale-105 transition-transform duration-200"
                 >
                   {loading ? <LoadingSpinner size="sm" /> : 'Load More Games'}
                 </Button>
@@ -252,9 +280,6 @@ export default function Dashboard() {
             )}
           </>
         )}
-
-        {/* Popular Genres */}
-        
       </main>
     </div>
   );
