@@ -41,28 +41,28 @@ export function Header({ user, onLogout }) {
             </Button>
 
             <p
-              className="text-lg font-regular text-gray-900 cursor-pointer dark:text-white"
+              className="text-lg font-regular text-gray-600 hover:text-black cursor-pointer dark:text-gray-400 dark:hover:text-white"
               onClick={() => router.push('/games')}
             >
               RANDOM
             </p>
             <p
-              className="text-lg font-regular text-gray-900 cursor-pointer dark:text-white"
+              className="text-lg font-regular text-gray-600 hover:text-black cursor-pointer dark:text-gray-400 dark:hover:text-white"
               onClick={() => router.push('/games')}
             >
               GAMES
             </p>
 
             {user ? (
-              <div className="relative group">
+              <div className="relative group ">
                 {/* Avatar + Username */}
-                <div className="flex items-center cursor-pointer space-x-2">
+                <div className="flex items-center cursor-pointer space-x-2 ">
                   <img
                     src={user.avatar ? user.avatar : '/images/pfp.jpg'}
                     alt={user.username}
                     className="w-8 h-8 rounded-full"
                   />
-                  <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                  <p className="text-lg font-semibold text-gray-600 hover:text-black  dark:text-gray-400 dark:hover:text-white ">
                     {user.username}
                   </p>
                 </div>

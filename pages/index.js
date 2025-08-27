@@ -2,11 +2,11 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { useTheme } from '@/components/ThemeProvider';
-import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
+import { useTheme } from '../components/ThemeProvider';
+import { Button } from '../components/ui/Button';
+import { Card } from '../components/ui/Card';
 import Image from 'next/image';
-import { Header } from '@/components/layout/Header';
+import { Header } from '../components/layout/Header';
 
 export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);

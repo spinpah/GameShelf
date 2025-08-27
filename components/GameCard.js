@@ -11,16 +11,7 @@ export function GameCard({ game, onRate, loggedin = false }) {
   };
 
 
-  const getPlatformIcon = (platform) => {
-    const icons = {
-      'PC': 'PC',
-      'PlayStation': 'PS5',
-      'Xbox': 'XBOX',
-      'Nintendo': 'Nintendo',
-      'Mobile': 'Mobile'
-    };
-    return icons[platform] || '🎮';
-  };
+  
 
   return (
     <div className="cursor-pointer group">
@@ -72,7 +63,7 @@ export function GameCard({ game, onRate, loggedin = false }) {
             {/* Genres */}
             {game.genres && game.genres.length > 0 && (
               <div className="flex flex-wrap gap-1">
-                {game.genres.slice(0, 3).map((genre) => (
+                {game.genres.slice(0, 2).map((genre) => (
                   <Badge key={genre.id || genre.name} variant="outline" className="text-xs px-2 py-1 bg-white bg-opacity-20 text-white border-white border-opacity-30">
                     {genre.name}
                   </Badge>
@@ -135,7 +126,7 @@ export function GameCard({ game, onRate, loggedin = false }) {
       {/* Game Name Below Image */}
       <div className="mt-2">
         <h3 className="font-medium text-gray-900 dark:text-white text-sm line-clamp-2 leading-tight">
-          {game.name}
+          {game.id}
         </h3>
       </div>
     </div>

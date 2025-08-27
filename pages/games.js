@@ -1,14 +1,14 @@
 /* eslint-disable @next/next/no-img-element */
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { Header } from '@/components/layout/Header';
-import { GameCard } from '@/components/GameCard';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Card } from '@/components/ui/Card';
-import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { Badge } from '@/components/ui/Badge';
-import { useTheme } from '@/components/ThemeProvider';
+import { Header } from '../components/layout/Header';
+import { GameCard } from '../components/GameCard';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
+import { Card } from '../components/ui/Card';
+import { LoadingSpinner } from '../components/LoadingSpinner';
+import { Badge } from '../components/ui/Badge';
+import { useTheme } from '../components/ThemeProvider';
 import { searchGames } from './api/games/Search'; 
 
 // Simple GameGrid Component
@@ -31,22 +31,37 @@ function GameGrid({ games, onRate, loggedin = false }) {
 function FilterDropdown({ label, value, onChange, options, placeholder }) {
   return (
     <div className="relative">
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-        {label}
-      </label>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm text-gray-900 dark:text-white"
-      >
-        <option value="">{placeholder}</option>
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    </div>
+  <select
+    value={value}
+    onChange={(e) => onChange(e.target.value)}
+    className="w-full px-3 py-2 pr-8 
+               bg-white dark:bg-gray-700 
+               border border-gray-300 dark:border-gray-600 
+               rounded-md shadow-sm 
+               focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 
+               text-sm text-gray-900 dark:text-white 
+               appearance-none"
+  >
+    <option value="">{placeholder}</option>
+    {options.map((option) => (
+      <option key={option.value} value={option.value}>
+        {option.label}
+      </option>
+    ))}
+  </select>
+  {/* custom arrow */}
+  <div className="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+    <svg
+      className="h-4 w-4 text-gray-400"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+    </svg>
+  </div>
+</div>
   );
 }
 
