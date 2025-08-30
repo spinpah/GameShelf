@@ -21,15 +21,23 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Check if user already exists
-    const existingUser = await prisma.user.findFirst({
-      where: {
-        OR: [
-          { email: email },
-          { username: username }
-        ]
-      }
-    });
+    // Try to check if user already exists
+    let existingUser;
+    try {
+      existingUser = await prisma.user.findFirst({
+        where: {
+          OR: [
+            { email: email },
+            { username: username }
+          ]
+        }
+      });
+    } catch (dbError) {
+      console.error('Database error:', dbError);
+      return res.status(500).json({ 
+        message: 'Database not available. Please try demo login: demo@example.com / demo123' 
+      });
+    }
 
     if (existingUser) {
       return res.status(400).json({ 
@@ -37,22 +45,31 @@ export default async function handler(req, res) {
       });
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 12);
+    // Try to create user
+    let user;
+    try {
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Create user
-    const user = await prisma.user.create({
-      data: {
-        email,
-        username,
-        password: hashedPassword
-      }
-    });
+      // Create user
+      user = await prisma.user.create({
+        data: {
+          email,
+          username,
+          password: hashedPassword
+        }
+      });
+    } catch (dbError) {
+      console.error('Database error:', dbError);
+      return res.status(500).json({ 
+        message: 'Database not available. Please try demo login: demo@example.com / demo123' 
+      });
+    }
 
     // Generate JWT token
     const token = jwt.sign(
       { userId: user.id, email: user.email },
-      process.env.NEXTAUTH_SECRET,
+      process.env.NEXTAUTH_SECRET || 'fallback-secret',
       { expiresIn: '7d' }
     );
 
@@ -68,7 +85,11 @@ export default async function handler(req, res) {
     console.error('Registration error:', error);
     res.status(500).json({ message: 'Internal server error' });
   } finally {
-    await prisma.$disconnect();
+    try {
+      await prisma.$disconnect();
+    } catch (e) {
+      // Ignore disconnect errors
+    }
   }
 }
 
