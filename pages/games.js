@@ -393,6 +393,40 @@ export default function Dashboard() {
           </div>
         )}
 
+        {/* Random Game Discovery */}
+        <div className='mb-8'>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              🎲 {t.discoverRandomGame}
+            </h3>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push('/random')}
+              className="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+            >
+              {t.viewAllRandom}
+            </Button>
+          </div>
+          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-lg p-6 border border-indigo-100 dark:border-indigo-800">
+            <div className="text-center">
+              <div className="text-4xl mb-3">🎮</div>
+              <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                {t.randomGameTitle}
+              </h4>
+              <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm">
+                {t.randomGameSubtitle}
+              </p>
+              <Button
+                onClick={() => router.push('/random')}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white"
+              >
+                🎲 {t.getRandomGame}
+              </Button>
+            </div>
+          </div>
+        </div>
+
 
 
         {/* Tabs */}
