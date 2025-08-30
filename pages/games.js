@@ -9,7 +9,7 @@ import { Card } from '../components/ui/Card';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { Badge } from '../components/ui/Badge';
 import { useTheme } from '../components/ThemeProvider';
-import { searchGames } from './api/games/Search';
+import { searchGames, searchGamesWithFilters } from './api/games/Search';
 import { useTranslation } from '../lib/translations'; 
 
 // Simple GameGrid Component
@@ -134,6 +134,28 @@ export default function Dashboard() {
     fetchGenres();
   }, [router]);
 
+  // Apply filters when they change
+  useEffect(() => {
+    const applyCurrentFilters = async () => {
+      if (Object.values(filters).some(filter => filter !== '')) {
+        setSearchLoading(true);
+        setActiveTab('search');
+        
+        try {
+          const filteredResults = await searchGamesWithFilters(filters);
+          setGames(filteredResults);
+        } catch (error) {
+          console.error('Error applying filters:', error);
+          setGames([]);
+        } finally {
+          setSearchLoading(false);
+        }
+      }
+    };
+
+    applyCurrentFilters();
+  }, [filters]);
+
   const fetchPopularGames = async (page = 1) => {
     try {
       setLoading(page === 1);
@@ -178,7 +200,8 @@ export default function Dashboard() {
     setActiveTab('search');
     
     try {
-      const searchResults = await searchGames(searchQuery.trim());
+      // Apply both search query and active filters
+      const searchResults = await searchGames(searchQuery.trim(), filters);
       setGames(searchResults);
     } catch (error) {
       console.error('Error searching games:', error);
@@ -221,11 +244,11 @@ export default function Dashboard() {
 
   const handleGenreClick = (genreName) => {
     setSearchQuery(genreName);
-    // Automatically search for the genre
+    // Automatically search for the genre with current filters
     setActiveTab('search');
     setSearchLoading(true);
     
-    searchGames(genreName)
+    searchGames(genreName, filters)
       .then(results => {
         setGames(results);
       })
@@ -239,15 +262,29 @@ export default function Dashboard() {
   };
 
   // Handle filter changes
-  const handleFilterChange = (filterType, value) => {
-    setFilters(prev => ({
-      ...prev,
+  const handleFilterChange = async (filterType, value) => {
+    const newFilters = {
+      ...filters,
       [filterType]: value
-    }));
+    };
     
-    // TODO: Implement filter logic here
-    console.log(`Filter changed - ${filterType}: ${value}`, filters);
-    // You can add your filter API call logic here
+    setFilters(newFilters);
+    
+    // Apply filters immediately
+    if (value || Object.values(newFilters).some(filter => filter !== '')) {
+      setSearchLoading(true);
+      setActiveTab('search');
+      
+      try {
+        const filteredResults = await searchGamesWithFilters(newFilters);
+        setGames(filteredResults);
+      } catch (error) {
+        console.error('Error applying filters:', error);
+        setGames([]);
+      } finally {
+        setSearchLoading(false);
+      }
+    }
   };
 
   // Clear all filters
@@ -258,8 +295,9 @@ export default function Dashboard() {
       platform: ''
     });
     
-    // TODO: Reset to default view (popular games)
+    // Reset to default view (popular games)
     setActiveTab('popular');
+    setSearchQuery('');
     fetchPopularGames();
   };
 
@@ -381,9 +419,17 @@ export default function Dashboard() {
         {/* Active Filters Display */}
         {hasActiveFilters && (
           <div className="mb-6">
-            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              {t.activeFilters}
-            </h4>
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                {t.activeFilters}
+              </h4>
+              {searchLoading && (
+                <div className="flex items-center text-sm text-indigo-600 dark:text-indigo-400">
+                  <LoadingSpinner size="sm" className="mr-2" />
+                  {t.filterResults}
+                </div>
+              )}
+            </div>
             <div className="flex flex-wrap gap-2">
               {filters.year && (
                 <Badge variant="secondary" className="bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">
@@ -401,27 +447,27 @@ export default function Dashboard() {
                 </Badge>
               )}
 
-              <div className="flex justify-end">
-                  <Button
-                    onClick={clearFilters}
-                    variant="secondary"
-                    size="sm"
-                    className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
-                  >
-                    {t.clearFilters}
-                  </Button>
-                </div>
+              <Button
+                onClick={clearFilters}
+                variant="secondary"
+                size="sm"
+                className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+              >
+                {t.clearFilters}
+              </Button>
             </div>
           </div>
         )}
         
 
         {/* Loading State */}
-        {loading ? (
+        {(loading || searchLoading) ? (
           <div className="flex justify-center items-center py-20">
             <div className="text-center">
               <LoadingSpinner size="lg" className="mb-4" />
-              <p className="text-gray-600 dark:text-gray-400">{t.loadingAmazingGames}</p>
+              <p className="text-gray-600 dark:text-gray-400">
+                {searchLoading ? t.filterResults : t.loadingAmazingGames}
+              </p>
             </div>
           </div>
         ) : !games || games.length === 0 ? (
@@ -429,14 +475,16 @@ export default function Dashboard() {
           <Card className="p-12 text-center">
             <div className="text-6xl mb-4">🎮</div>
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-              {t.noGamesFound}
+              {hasActiveFilters ? t.noFilterResults : t.noGamesFound}
             </h3>
             <p className="text-gray-600 dark:text-gray-400">
-              {activeTab === 'search' 
-                ? t.trySearchingElse 
-                : t.unableToLoadGames}
+              {hasActiveFilters 
+                ? t.tryAdjustingFilters
+                : activeTab === 'search' 
+                  ? t.trySearchingElse 
+                  : t.unableToLoadGames}
             </p>
-            {activeTab === 'search' && (
+            {(activeTab === 'search' || hasActiveFilters) && (
               <Button 
                 onClick={() => handleTabChange('popular')}
                 variant="outline"
