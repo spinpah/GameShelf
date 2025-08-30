@@ -9,10 +9,11 @@ import { Card } from '../components/ui/Card';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { Badge } from '../components/ui/Badge';
 import { useTheme } from '../components/ThemeProvider';
-import { searchGames } from './api/games/Search'; 
+import { searchGames } from './api/games/Search';
+import { useTranslation } from '../lib/translations'; 
 
 // Simple GameGrid Component
-function GameGrid({ games, onRate, loggedin = false }) {
+function GameGrid({ games, onRate, loggedin = false, userId }) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 mb-8">
       {games.map((game, index) => (
@@ -21,6 +22,7 @@ function GameGrid({ games, onRate, loggedin = false }) {
           game={game}
           onRate={onRate}
           loggedin={loggedin}
+          userId={userId}
         />
       ))}
     </div>
@@ -86,6 +88,7 @@ export default function Dashboard() {
   
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
+  const t = useTranslation();
 
   // Filter options
   const yearOptions = [
@@ -191,9 +194,16 @@ export default function Dashboard() {
     }
   };
 
-  const handleRateGame = (game) => {
-    // TODO: Implement rating functionality
-    console.log('Rate game:', game);
+  const handleRateGame = (game, result) => {
+    // Update the game's rating in the local state
+    setGames(prevGames => 
+      prevGames.map(g => 
+        g.id === game.id 
+          ? { ...g, rating: result.averageRating }
+          : g
+      )
+    );
+    console.log('Game rated:', game.name, 'New average rating:', result.averageRating);
   };
 
   const handleLogout = () => {
@@ -267,7 +277,7 @@ export default function Dashboard() {
             {/* Browse By Title */}
             <div className="lg:w-1/4">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white ">
-                BROWSE BY
+                {t.browseBy}
               </h2>
             </div>
 
@@ -279,7 +289,7 @@ export default function Dashboard() {
                   value={filters.year}
                   onChange={(value) => handleFilterChange('year', value)}
                   options={yearOptions}
-                  placeholder="Select decade"
+                  placeholder={t.selectDecade}
                 />
                 
                 <FilterDropdown
@@ -287,7 +297,7 @@ export default function Dashboard() {
                   value={filters.rating}
                   onChange={(value) => handleFilterChange('rating', value)}
                   options={ratingOptions}
-                  placeholder="Minimum rating"
+                  placeholder={t.minimumRating}
                 />
                 
                 <FilterDropdown
@@ -295,7 +305,7 @@ export default function Dashboard() {
                   value={filters.platform}
                   onChange={(value) => handleFilterChange('platform', value)}
                   options={platformOptions}
-                  placeholder="Select platform"
+                  placeholder={t.selectPlatform}
                 />
               </div>
 
@@ -307,7 +317,7 @@ export default function Dashboard() {
               <form onSubmit={handleSearch} className="flex gap-2">
                 <div className="flex-1">
                   <Input
-                    placeholder="Search for games..."
+                    placeholder={t.searchPlaceholder}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="text-sm"
@@ -318,7 +328,7 @@ export default function Dashboard() {
                   disabled={searchLoading || !searchQuery.trim()}
                   size="md"
                 >
-                  {searchLoading ? <LoadingSpinner size="sm" /> : 'Search'}
+                  {searchLoading ? <LoadingSpinner size="sm" /> : t.search}
                 </Button>
               </form>
             </div>
@@ -329,7 +339,7 @@ export default function Dashboard() {
         {genres.length > 0 && (
           <div className='mb-8'>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              Popular Genres
+              {t.popularGenres}
             </h3>
             <div className="flex flex-wrap gap-2">
               {genres.map((genre) => (
@@ -350,8 +360,8 @@ export default function Dashboard() {
         {/* Tabs */}
         <div className="flex space-x-1 mb-8 bg-gray-200 dark:bg-gray-700 rounded-lg">
           {[
-            { id: 'popular', label: 'All Games' },
-            { id: 'search', label: 'Search Results' }
+            { id: 'popular', label: t.allGames },
+            { id: 'search', label: t.searchResults }
           ].map((tab) => (
             <button
               key={tab.id}
@@ -372,22 +382,22 @@ export default function Dashboard() {
         {hasActiveFilters && (
           <div className="mb-6">
             <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Active Filters:
+              {t.activeFilters}
             </h4>
             <div className="flex flex-wrap gap-2">
               {filters.year && (
                 <Badge variant="secondary" className="bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">
-                  Year: {filters.year}
+                  {t.year}: {filters.year}
                 </Badge>
               )}
               {filters.rating && (
                 <Badge variant="secondary" className="bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">
-                  Rating: {filters.rating}+ Stars
+                  {t.rating}: {filters.rating}+ Stars
                 </Badge>
               )}
               {filters.platform && (
                 <Badge variant="secondary" className="bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">
-                  Platform: {platformOptions.find(p => p.value === filters.platform)?.label}
+                  {t.platform}: {platformOptions.find(p => p.value === filters.platform)?.label}
                 </Badge>
               )}
 
@@ -398,7 +408,7 @@ export default function Dashboard() {
                     size="sm"
                     className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                   >
-                    Clear Filters
+                    {t.clearFilters}
                   </Button>
                 </div>
             </div>
@@ -411,7 +421,7 @@ export default function Dashboard() {
           <div className="flex justify-center items-center py-20">
             <div className="text-center">
               <LoadingSpinner size="lg" className="mb-4" />
-              <p className="text-gray-600 dark:text-gray-400">Loading amazing games...</p>
+              <p className="text-gray-600 dark:text-gray-400">{t.loadingAmazingGames}</p>
             </div>
           </div>
         ) : !games || games.length === 0 ? (
@@ -419,12 +429,12 @@ export default function Dashboard() {
           <Card className="p-12 text-center">
             <div className="text-6xl mb-4">🎮</div>
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-              No games found
+              {t.noGamesFound}
             </h3>
             <p className="text-gray-600 dark:text-gray-400">
               {activeTab === 'search' 
-                ? 'Try searching for something else' 
-                : 'Unable to load games at the moment'}
+                ? t.trySearchingElse 
+                : t.unableToLoadGames}
             </p>
             {activeTab === 'search' && (
               <Button 
@@ -432,7 +442,7 @@ export default function Dashboard() {
                 variant="outline"
                 className="mt-4"
               >
-                View Popular Games
+                {t.viewPopularGames}
               </Button>
             )}
           </Card>
@@ -443,6 +453,7 @@ export default function Dashboard() {
               games={games}
               onRate={handleRateGame}
               loggedin={isLoggedIn}
+              userId={user?.id}
             />
 
             {/* Load More Button */}
@@ -455,7 +466,7 @@ export default function Dashboard() {
                   disabled={loading}
                   className="hover:scale-105 transition-transform duration-200"
                 >
-                  {loading ? <LoadingSpinner size="sm" /> : 'Load More Games'}
+                  {loading ? <LoadingSpinner size="sm" /> : t.loadMoreGames}
                 </Button>
               </div>
             )}

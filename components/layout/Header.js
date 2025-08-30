@@ -4,9 +4,13 @@ import { Button } from '../ui/Button';
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
+import { useLanguage } from '../LanguageProvider';
+import { useTranslation } from '../../lib/translations';
 
 export function Header({ user, onLogout }) {
   const { theme, toggleTheme } = useTheme();
+  const { language, toggleLanguage } = useLanguage();
+  const t = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const router = useRouter();
 
@@ -40,17 +44,26 @@ export function Header({ user, onLogout }) {
               {theme === 'light' ? '🌙' : '☀️'}
             </Button>
 
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleLanguage}
+              className="p-2"
+            >
+              {language === 'en' ? '🇫🇷' : '🇺🇸'}
+            </Button>
+
             <p
               className="text-lg font-regular text-gray-600 hover:text-black cursor-pointer dark:text-gray-400 dark:hover:text-white"
               onClick={() => router.push('/games')}
             >
-              RANDOM
+              {t.random}
             </p>
             <p
               className="text-lg font-regular text-gray-600 hover:text-black cursor-pointer dark:text-gray-400 dark:hover:text-white"
               onClick={() => router.push('/games')}
             >
-              GAMES
+              {t.games}
             </p>
 
             {user ? (
@@ -68,23 +81,30 @@ export function Header({ user, onLogout }) {
                 </div>
 
                 {/* Dropdown */}
-                <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 group-hover:translate-y-1 transition-all duration-200 invisible group-hover:visible">
+                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 group-hover:translate-y-1 transition-all duration-200 invisible group-hover:visible">
+                  <button
+                    className="w-full text-left px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:rounded-lg"
+                    onClick={() => router.push('/profile')}
+                  >
+                    👤 {t.profile}
+                  </button>
                   <button
                     className="w-full text-left px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:rounded-lg"
                     onClick={() => router.push('/settings')}
                   >
-                    Settings
+                    ⚙️ {t.settings}
                   </button>
+                  <hr className="border-gray-200 dark:border-gray-600 my-1" />
                   <button
                     className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-100 dark:hover:bg-red-700 dark:hover:rounded-lg"
                     onClick={onLogout}
                   >
-                    Logout
+                    🚪 {t.logout}
                   </button>
                 </div>
               </div>
             ) : (
-              <Button onClick={() => router.push('/login')}>Login</Button>
+              <Button onClick={() => router.push('/login')}>{t.login}</Button>
             )}
           </div>
 
@@ -119,9 +139,12 @@ export function Header({ user, onLogout }) {
               <Button variant="ghost" size="sm" onClick={toggleTheme}>
                 {theme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode'}
               </Button>
+              <Button variant="ghost" size="sm" onClick={toggleLanguage}>
+                {language === 'en' ? '🇫🇷 Français' : '🇺🇸 English'}
+              </Button>
               {user && (
                 <Button variant="outline" size="sm" onClick={onLogout}>
-                  Logout
+                  {t.logout}
                 </Button>
               )}
             </div>

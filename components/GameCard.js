@@ -2,8 +2,14 @@
 
 import { Badge } from './ui/Badge';
 import { Button } from './ui/Button';
+import { useTranslation } from '../lib/translations';
+import { RatingModal } from './RatingModal';
+import { useState } from 'react';
 
-export function GameCard({ game, onRate, loggedin = false }) {
+export function GameCard({ game, onRate, loggedin = false, userId }) {
+  const t = useTranslation();
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  
   const getRatingColor = (rating) => {
     if (rating >= 4.5) return 'success';
     if (rating >= 3.5) return 'warning';
@@ -14,7 +20,7 @@ export function GameCard({ game, onRate, loggedin = false }) {
   
 
   return (
-    <div className="cursor-pointer group">
+    <div className="cursor-pointer group" onClick={() => window.location.href = `/games/${game.id}`}>
       {/* Game Image - Rectangle with sharp corners */}
       <div className="relative aspect-[3/4] w-full overflow-hidden bg-gray-200 dark:bg-gray-700">
         <img
@@ -91,34 +97,37 @@ export function GameCard({ game, onRate, loggedin = false }) {
               
               {game.ratings_count && (
                 <span>
-                  {game.ratings_count > 1000 ? `${Math.round(game.ratings_count / 1000)}k` : game.ratings_count} reviews
+                  {game.ratings_count > 1000 ? `${Math.round(game.ratings_count / 1000)}k` : game.ratings_count} {t.reviews}
                 </span>
               )}
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex space-x-2">
-              <Button 
-                size="sm" 
-                className="flex-1 text-xs py-2"
-                onClick={(e) => e.stopPropagation()}
-              >
-                Details
-              </Button>
-              {loggedin && (
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="text-xs py-2 px-3 bg-white bg-opacity-20 text-white border-white border-opacity-30 hover:bg-opacity-30"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onRate(game);
-                  }}
-                >
-                  ⭐ Rate
-                </Button>
-              )}
-            </div>
+                         {/* Action Buttons */}
+             <div className="flex space-x-2">
+               <Button 
+                 size="sm" 
+                 className="flex-1 text-xs py-2"
+                 onClick={(e) => {
+                   e.stopPropagation();
+                   window.location.href = `/games/${game.id}`;
+                 }}
+               >
+                 {t.details}
+               </Button>
+               {loggedin && (
+                 <Button 
+                   variant="outline" 
+                   size="sm" 
+                   className="text-xs py-2 px-3 bg-white bg-opacity-20 text-white border-white border-opacity-30 hover:bg-opacity-30"
+                   onClick={(e) => {
+                     e.stopPropagation();
+                     setShowRatingModal(true);
+                   }}
+                 >
+                   ⭐ {t.rate}
+                 </Button>
+               )}
+             </div>
           </div>
         </div>
       </div>
@@ -126,9 +135,22 @@ export function GameCard({ game, onRate, loggedin = false }) {
       {/* Game Name Below Image */}
       <div className="mt-2">
         <h3 className="font-medium text-gray-900 dark:text-white text-sm line-clamp-2 leading-tight">
-          {game.id}
+          {game.name}
         </h3>
       </div>
+
+      {/* Rating Modal */}
+      <RatingModal
+        game={game}
+        isOpen={showRatingModal}
+        onClose={() => setShowRatingModal(false)}
+        onRatingSubmit={(result) => {
+          if (onRate) {
+            onRate(game, result);
+          }
+        }}
+        userId={userId}
+      />
     </div>
   );
 }

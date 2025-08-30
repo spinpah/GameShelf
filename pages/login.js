@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
-import { useTheme } from '@/components/ThemeProvider';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Card } from '@/components/ui/Card';
+import { useTheme } from '../components/ThemeProvider';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
+import { Card } from '../components/ui/Card';
+import { useTranslation } from '../lib/translations';
 
 export default function Login() {
   const [isLogin, setIsLogin] = useState(true);
@@ -17,6 +18,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const router = useRouter();
+  const t = useTranslation();
 
   const handleInputChange = (e) => {
     setFormData({
@@ -31,7 +33,7 @@ export default function Login() {
     setLoading(true);
 
     if (!isLogin && formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      setError(t.passwordsDoNotMatch);
       setLoading(false);
       return;
     }
@@ -61,10 +63,10 @@ export default function Login() {
         localStorage.setItem('user', JSON.stringify(data.user));
         router.push('/');
       } else {
-        setError(data.message || 'Something went wrong');
+        setError(data.message || t.somethingWentWrong);
       }
     } catch (err) {
-      setError('Network error. Please try again.');
+      setError(t.networkError);
     } finally {
       setLoading(false);
     }
@@ -90,7 +92,7 @@ export default function Login() {
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">GameShelf</h1>
             </div>
             <p className="text-gray-600 dark:text-gray-300">
-              {isLogin ? 'Welcome back!' : 'Join the gaming community'}
+              {isLogin ? t.welcomeBack : t.joinCommunity}
             </p>
           </div>
 
@@ -104,7 +106,7 @@ export default function Login() {
               }`}
               onClick={() => setIsLogin(true)}
             >
-              Login
+              {t.login}
             </button>
             <button
               className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
@@ -114,52 +116,52 @@ export default function Login() {
               }`}
               onClick={() => setIsLogin(false)}
             >
-              Sign Up
+              {t.signUp}
             </button>
           </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
-              label="Email"
+              label={t.email}
               type="email"
               name="email"
               value={formData.email}
               onChange={handleInputChange}
-              placeholder="Enter your email"
+              placeholder={t.enterEmail}
               required
             />
 
             {!isLogin && (
               <Input
-                label="Username"
+                label={t.username}
                 type="text"
                 name="username"
                 value={formData.username}
                 onChange={handleInputChange}
-                placeholder="Choose a username"
+                placeholder={t.chooseUsername}
                 required
               />
             )}
 
             <Input
-              label="Password"
+              label={t.password}
               type="password"
               name="password"
               value={formData.password}
               onChange={handleInputChange}
-              placeholder="Enter your password"
+              placeholder={t.enterPassword}
               required
             />
 
             {!isLogin && (
               <Input
-                label="Confirm Password"
+                label={t.confirmPassword}
                 type="password"
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleInputChange}
-                placeholder="Confirm your password"
+                placeholder={t.confirmYourPassword}
                 required
               />
             )}
@@ -176,19 +178,19 @@ export default function Login() {
               className="w-full"
               size="lg"
             >
-              {loading ? 'Please wait...' : (isLogin ? 'Login' : 'Create Account')}
+              {loading ? t.pleaseWait : (isLogin ? t.login : t.createAccount)}
             </Button>
           </form>
 
           {/* Footer */}
           <div className="mt-6 text-center">
             <p className="text-gray-600 dark:text-gray-400">
-              {isLogin ? "Don't have an account? " : "Already have an account? "}
+              {isLogin ? t.dontHaveAccount : t.alreadyHaveAccount}
               <button
                 onClick={() => setIsLogin(!isLogin)}
                 className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 font-medium transition-colors"
               >
-                {isLogin ? 'Sign up here' : 'Login here'}
+                {isLogin ? t.signUpHere : t.loginHere}
               </button>
             </p>
           </div>

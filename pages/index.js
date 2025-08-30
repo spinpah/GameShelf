@@ -7,6 +7,7 @@ import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import Image from 'next/image';
 import { Header } from '../components/layout/Header';
+import { useTranslation } from '../lib/translations';
 
 export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -14,6 +15,7 @@ export default function Home() {
   const router = useRouter();
   const [user , setUser] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const t = useTranslation();
   const hoverSound = typeof Audio !== "undefined" ? new Audio("/sounds/hover.mp3") : null;
 
   const playHoverSound = () => {
@@ -75,12 +77,11 @@ export default function Home() {
             
               <div className="space-y-4">
                 <h1 className="text-5xl mt-16 lg:text-6xl font-bold text-gray-900 dark:text-white leading-tight">
-                  Track Your
-                  <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent"> Gaming Journey</span>
+                  {t.trackYour}
+                  <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent"> {t.gamingJourney}</span>
                 </h1>
                 <p className="text-xl text-center text-gray-600 dark:text-gray-300 leading-relaxed max-w-2xl">
-                  Discover, rate, and review thousands of games. Connect with friends and 
-                  build your personal gaming library with our modern, intuitive platform.
+                  {t.heroDescription}
                 </p>
               </div>
               
@@ -124,10 +125,10 @@ export default function Home() {
 
             <div className="justify-center flex flex-col sm:flex-row gap-4">
                 <Button size="lg" onClick={handleGetStarted} className="text-lg px-8 py-4">
-                  {isLoggedIn ? 'Find Games' : 'Get Started'}
+                  {isLoggedIn ? t.findGames : t.getStarted}
                 </Button>
                 <Button variant="outline" size="lg" onClick={handleLearnMore} className="text-lg px-8 py-4">
-                  Learn More
+                  {t.learnMore}
                 </Button>
               </div>
           </div>
@@ -139,10 +140,10 @@ export default function Home() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-                Why Choose GameShelf?
+                {t.whyChooseGameShelf}
               </h2>
               <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-                Everything you need to manage and discover your perfect gaming experience
+                {t.whyChooseDescription}
               </p>
             </div>
 
@@ -150,18 +151,18 @@ export default function Home() {
               {[
                 {
                   icon: '📊',
-                  title: 'Smart Analytics',
-                  description: 'Track your gaming habits with detailed statistics and personalized insights.'
+                  title: t.smartAnalytics,
+                  description: t.smartAnalyticsDesc
                 },
                 {
                   icon: '🌐',
-                  title: 'Vast Game Library',
-                  description: 'Access thousands of games from our comprehensive database with real-time updates.'
+                  title: t.vastGameLibrary,
+                  description: t.vastGameLibraryDesc
                 },
                 {
                   icon: '👥',
-                  title: 'Social Features',
-                  description: 'Connect with friends, share reviews, and discover games through your network.'
+                  title: t.socialFeatures,
+                  description: t.socialFeaturesDesc
                 }
               ].map((feature, index) => (
                 <Card key={index} className="p-8 text-center hover:shadow-2xl transition-all duration-200 bg-white dark:bg-gray-800">
@@ -191,7 +192,7 @@ export default function Home() {
                     className='justify-center mb-4'
                 />
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                Welcome to GameShelf
+                {t.welcomeToGameShelf}
               </h2>
               <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
                 This project is part of my <span className="font-semibold">portfolio</span>.  
@@ -202,7 +203,7 @@ export default function Home() {
                 or plan to play has a place. 🚀
               </p>
               <Button onClick={handleCloseModal} className="mt-4 px-6 py-3 text-lg">
-                Close
+                {t.close}
               </Button>
             </div>
           </div>
@@ -221,7 +222,7 @@ export default function Home() {
         />
           </div>
           <p className="text-gray-400">
-            &copy; 2025 GameShelf. Built with ❤️ for gamers, by gamers.
+            {t.footerCopyright}
           </p>
         </div>
       </footer>

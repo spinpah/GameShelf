@@ -22,8 +22,13 @@ export async function rateGame({ userId, gameData, userRating, review }: RateGam
   try {
     const result = await prisma.$transaction(async (tx) => {
       // Step 1: Check if game exists in our database
-      const existingGame = await tx.game.findUnique({
-        where: { id: gameData.id },
+      const existingGame = await tx.game.findFirst({
+        where: { 
+          OR: [
+            { id: gameData.id },
+            { rawgId: gameData.id }
+          ]
+        },
         include: {
           ratings: {
             select: { rating: true }
@@ -38,11 +43,14 @@ export async function rateGame({ userId, gameData, userRating, review }: RateGam
       if (existingGame) {
         // Game exists - update it
         game = await tx.game.update({
-          where: { id: gameData.id },
+          where: { id: existingGame.id },
           data: {
             name: gameData.name,
             description: gameData.description,
             coverPhoto: gameData.coverPhoto,
+            rawgRating: gameData.rawgRating,
+            rawgRatingCount: gameData.rawgRatingCount,
+            rawgId: gameData.id, // Ensure rawgId is set
           },
         });
         
@@ -52,10 +60,12 @@ export async function rateGame({ userId, gameData, userRating, review }: RateGam
         // Game doesn't exist - create it
         game = await tx.game.create({
           data: {
-            id: gameData.id,
+            rawgId: gameData.id,
             name: gameData.name,
             description: gameData.description,
             coverPhoto: gameData.coverPhoto,
+            rawgRating: gameData.rawgRating,
+            rawgRatingCount: gameData.rawgRatingCount,
           },
         });
         
@@ -69,7 +79,7 @@ export async function rateGame({ userId, gameData, userRating, review }: RateGam
         where: {
           userId_gameId: {
             userId,
-            gameId: gameData.id,
+            gameId: game.id, // Use the game.id from our database
           },
         },
         update: {
@@ -78,7 +88,7 @@ export async function rateGame({ userId, gameData, userRating, review }: RateGam
         },
         create: {
           userId,
-          gameId: gameData.id,
+          gameId: game.id, // Use the game.id from our database
           rating: userRating,
           review,
         },
@@ -86,21 +96,22 @@ export async function rateGame({ userId, gameData, userRating, review }: RateGam
 
       // Step 3: Calculate new average rating
       const userRatings = await tx.rating.findMany({
-        where: { gameId: gameData.id },
+        where: { gameId: game.id },
         select: { rating: true },
       });
 
       let averageRating: number;
 
-      if (shouldUseRawgRating && gameData.rawgRating && rawgWeight > 0) {
-        // New game: combine RAWG rating with user ratings
-        averageRating = calculateWeightedAverage({
-          rawgRating: gameData.rawgRating,
-          rawgWeight,
-          userRatings: userRatings.map(r => r.rating),
-        });
+      // Calculate new average rating using the formula:
+      // (RAWG rating * RAWG rating count + user rating * 1) / (RAWG rating count + 1)
+      if (gameData.rawgRating && gameData.rawgRatingCount) {
+        const rawgTotal = gameData.rawgRating * gameData.rawgRatingCount;
+        const userTotal = userRatings.reduce((sum, r) => sum + r.rating, 0);
+        const totalRatings = gameData.rawgRatingCount + userRatings.length;
+        
+        averageRating = totalRatings > 0 ? (rawgTotal + userTotal) / totalRatings : gameData.rawgRating;
       } else {
-        // Existing game: use only user ratings
+        // Fallback to simple average if no RAWG data
         averageRating = userRatings.length > 0 
           ? userRatings.reduce((sum, r) => sum + r.rating, 0) / userRatings.length 
           : userRating;
@@ -108,7 +119,7 @@ export async function rateGame({ userId, gameData, userRating, review }: RateGam
 
       // Step 4: Update the game's average rating
       const updatedGame = await tx.game.update({
-        where: { id: gameData.id },
+        where: { id: game.id },
         data: { averageRating },
         include: {
           ratings: {
